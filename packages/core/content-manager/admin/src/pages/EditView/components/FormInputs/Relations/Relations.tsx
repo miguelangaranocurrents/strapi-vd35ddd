@@ -752,6 +752,13 @@ const RelationModalWithContext = ({
 
   React.useLayoutEffect(() => {
     setTextValue('');
+    /**
+     * Selecting a relation changes which entries are available, so the current
+     * search text (which is usually the option that was just picked) must be
+     * dropped too — otherwise the refreshed options stay filtered by it and the
+     * dropdown re-opens on stale, usually empty, results.
+     */
+    setSearchParams((prev) => (prev._q === '' && prev.page === 1 ? prev : { _q: '', page: 1 }));
   }, [fieldValue]);
 
   const handleSearch = async (search: string) => {
@@ -797,8 +804,13 @@ const RelationModalWithContext = ({
           }
           hasMoreItems={hasNextPage}
           loading={isLoadingSearchRelations || isLoadingPermissions}
-          onOpenChange={() => {
-            handleSearch(textValue ?? '');
+          onOpenChange={(open) => {
+            // Only (re)search when the popover opens: searching on close would fire a
+            // query for the option that was just selected, replacing the up-to-date
+            // list of remaining entries with an empty result set.
+            if (open) {
+              handleSearch(textValue ?? '');
+            }
           }}
           noOptionsMessage={() =>
             formatMessage({

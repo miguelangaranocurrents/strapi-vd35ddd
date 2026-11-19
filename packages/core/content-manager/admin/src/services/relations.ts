@@ -126,6 +126,12 @@ const relationsApi = contentManagerApi.injectEndpoints({
           endpointName,
           model: queryArgs.model,
           targetField: queryArgs.targetField,
+          // The source row determines which relations are already taken, so it must be
+          // part of the cache key — without it every instance of the same field (e.g.
+          // two components in a dynamic zone) shares one entry and shows whichever
+          // response landed last.
+          id: queryArgs.params?.id,
+          locale: queryArgs.params?.locale,
           _q: queryArgs.params?._q,
           idsToOmit: queryArgs.params?.idsToOmit,
           idsToInclude: queryArgs.params?.idsToInclude,
